@@ -1,0 +1,15 @@
+# Core Framework
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+pydantic==2.11.3
+pydantic-settings>=2.0
+python-dotenv==1.1.0
+
+# Cryptography (PKI, signing, verification)
+cryptography==45.0.3
+
+# Testing
+pytest==8.4.1
+
+# Utilities
+python-multipart==0.0.20
