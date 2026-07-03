@@ -104,6 +104,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Routers ──────────────────────────────────────────────────────────────────
+
+from app.routers.pki import router as pki_router  # noqa: E402
+
+app.include_router(pki_router)
 
 # ── Root Routes ──────────────────────────────────────────────────────────────
 
@@ -126,6 +131,7 @@ async def root() -> dict:
             "health": "/health",
             "docs": "/docs",
             "openapi": "/openapi.json",
+            "pki": "/api/pki",
         },
     }
 
