@@ -83,7 +83,15 @@ class SQLiteStore:
         """
         conn: Optional[sqlite3.Connection] = getattr(self._local, "conn", None)
         if conn is None:
-            conn = sqlite3.connect(self.db_path)
+            if self.db_path == ":memory:":
+                # Use shared-cache URI so every thread sees the same
+                # in-memory database (plain ':memory:' creates a
+                # separate empty database per connection).
+                conn = sqlite3.connect(
+                    "file::memory:?cache=shared", uri=True,
+                )
+            else:
+                conn = sqlite3.connect(self.db_path)
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA journal_mode=WAL;")
             conn.execute("PRAGMA foreign_keys=ON;")

@@ -107,8 +107,10 @@ app.add_middleware(
 # ── Routers ──────────────────────────────────────────────────────────────────
 
 from app.routers.pki import router as pki_router  # noqa: E402
+from app.routers.firmware import router as firmware_router  # noqa: E402
 
 app.include_router(pki_router)
+app.include_router(firmware_router)
 
 # ── Root Routes ──────────────────────────────────────────────────────────────
 
@@ -132,6 +134,7 @@ async def root() -> dict:
             "docs": "/docs",
             "openapi": "/openapi.json",
             "pki": "/api/pki",
+            "firmware": "/api/firmware",
         },
     }
 
