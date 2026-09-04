@@ -115,6 +115,14 @@ class IoTDevice:
             firmware_bytes = resp.content
             
             self.logger.info("Running SecureBoot verification...")
+            
+            # Anti-Rollback check
+            new_version = manifest_dict.get('version', '')
+            if new_version and self._is_older_version(new_version, self.current_version):
+                self.logger.error(f"Anti-rollback triggered: Version {new_version} is older than current {self.current_version}")
+                self._report_status(firmware_id, False, "Anti-rollback triggered: Attempted to downgrade firmware.")
+                return
+
             try:
                 with open(self.ca_cert_path, "rb") as f:
                     ca_cert_pem = f.read()
@@ -161,3 +169,18 @@ class IoTDevice:
             self.logger.info(f"Reported status: success={success}, msg={message}")
         except httpx.HTTPError as e:
             self.logger.error(f"Failed to report status: {e}")
+
+    def _is_older_version(self, new_version: str, current_version: str) -> bool:
+        """Return True if new_version is older than current_version using basic SemVer logic."""
+        if not current_version or current_version == "0.0.0":
+            return False
+            
+        def parse_v(v):
+            parts = str(v).replace('v', '').split('.')
+            return [int(p) if p.isdigit() else 0 for p in parts]
+            
+        try:
+            return parse_v(new_version) < parse_v(current_version)
+        except Exception:
+            # Fallback to string comparison
+            return new_version < current_version
