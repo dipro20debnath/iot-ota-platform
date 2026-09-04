@@ -60,6 +60,10 @@ class SQLiteStore:
 
         if db_path != ":memory:":
             Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+            self._keepalive = None
+        else:
+            # Hold a persistent connection to keep the shared in-memory DB alive
+            self._keepalive = sqlite3.connect("file::memory:?cache=shared", uri=True)
 
         self._local: threading.local = threading.local()
         self._init_db()
