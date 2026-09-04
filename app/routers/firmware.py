@@ -562,13 +562,16 @@ async def sign_firmware(request: SignFirmwareRequest) -> dict:
 
     # Store signature in DB via raw SQL update
     try:
+        active_signing_certs = store.list_certs(cert_type="signing", status="active")
+        actual_cert_id = active_signing_certs[0]["cert_id"] if active_signing_certs else sign_result.get("signer_fingerprint")
+        
         conn = store._get_connection()
         conn.execute(
             "UPDATE firmware SET signature = ?, signer_cert_id = ? "
             "WHERE firmware_id = ?",
             (
                 sign_result["signature"],
-                sign_result.get("signer_fingerprint"),
+                actual_cert_id,
                 request.firmware_id,
             ),
         )
