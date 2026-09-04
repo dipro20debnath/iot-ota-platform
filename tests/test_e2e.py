@@ -58,10 +58,19 @@ class TestEndToEndPipeline(unittest.TestCase):
     def tearDown(self):
         settings.PKI_DATA_DIR = self.old_pki_dir
         settings.FIRMWARE_STORE_DIR = self.old_fw_dir
+        import app.routers.firmware as fw_router
         fw_router._firmware_storage._store_dir = self.old_store_dir
         
+        # Restore PKI globals
+        import app.routers.pki as pki_router
+        pki_router._ca = self.old_pki_ca
+        
+        # Cleanup temp dirs
         shutil.rmtree(self.pki_dir, ignore_errors=True)
         shutil.rmtree(self.fw_dir, ignore_errors=True)
+        
+        reset_store()
+        os.environ["STORE_MODE"] = "memory"
 
     def _patch_device_client(self, device: IoTDevice):
         # The device simulator sends POST /api/updates/check, but the router expects GET /api/updates/check/{device_id}
