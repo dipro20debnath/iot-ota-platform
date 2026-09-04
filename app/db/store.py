@@ -68,9 +68,22 @@ def reset_store() -> None:
     reference to ``None`` so that the next :func:`get_store` call creates
     a fresh instance.
 
+    For in-memory databases with shared cache, all table data is deleted
+    first to ensure a clean slate for subsequent tests.
+
     Primarily intended for test fixtures.
     """
     global _store_instance
     if _store_instance is not None:
+        # For shared-cache in-memory DBs, clear all data so the next
+        # store instance starts fresh (the shared DB survives close).
+        if _store_instance.db_path == ":memory:":
+            try:
+                conn = _store_instance._get_connection()
+                for table in ("deployments", "firmware", "certificates", "devices"):
+                    conn.execute(f"DELETE FROM {table}")  # noqa: S608
+                conn.commit()
+            except Exception:
+                pass
         _store_instance.close()
     _store_instance = None
